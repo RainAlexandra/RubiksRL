@@ -8,14 +8,14 @@ Created on Wed Nov  4 10:31:08 2020
 import numpy as np
 import random
 
-squares = np.array(['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 
+init_state = np.array(['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 
          'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 
          'O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 
          'R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 
          'W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 
          'Y1', 'Y2', 'Y3', 'Y4', 'Y5', 'Y6', 'Y7', 'Y8'], str)
 
-square_count = len(squares)
+sticker_count = len(init_state)
 
 R = [[34, 21, 42, 26, 34],
      [36, 19, 44, 28, 36],
@@ -65,7 +65,7 @@ D = [[13, 29, 5, 21, 13],
 
 Di = [D[i][::-1] for i in range(len(D))]
 
-poss_moves = {"R": R,
+actions = {"R": R,
             "R'": Ri,
             "L": L,
             "L'": Li,
@@ -82,42 +82,45 @@ poss_moves = {"R": R,
     
 def seq_str_arr_toggle(sequence):
     # convert string sequence to array and vice versa
-    
+    if (type(sequence) == str):
+        return sequence.split()
+    return ' '.join(sequence)
 
 def generate_shuffle_seq(length=25):
-    moves = list(poss_moves.keys())
-    ret = [random.choice(moves) for i in range(length)]
+    poss_actions = list(actions.keys())
+    ret = [random.choice(poss_actions) for i in range(length)]
     return ' '.join(ret)
 
 def move(state, swaps):
+    next_state = state.copy()
     for s in swaps:
         from_idx = s[:-1]
         to_idx = s[1:]
-        state[to_idx] = state[from_idx]
-    return state
+        next_state[to_idx] = next_state[from_idx]
+    return next_state
 
 def move_seq(state, sequence):
     # sequence = string
     if (type(sequence) != list):
         sequence = sequence.split()
     for seq in sequence:
-        state = move(state, poss_moves[seq])
+        state = move(state, actions[seq])
         # print(state)
     return state
 
-def invert(move):
+def invert(action):
     # in string form
-    if (move[-1] == '\''):
-        return move[:-1]
-    return move + "\'"
+    if (action[-1] == '\''):
+        return action[:-1]
+    return action + "\'"
 
 def invert_seq(sequence):
     # sequence in string form
     sequence = sequence.split()
-    sequence = [invert(move) for move in sequence]
+    sequence = [invert(action) for action in sequence]
     inverted = ' '.join(reversed(sequence))
     return inverted
 
 def check_if_solved(state):
-    return sum(state == sorted(state)) == square_count
+    return sum(state == sorted(state)) == sticker_count
 
